@@ -22,11 +22,12 @@
 % batchdata -- the data that is divided into batches (numcases numdims numbatches)
 % restart   -- set to 1 if learning starts from beginning 
 
-epsilonw      = 0.01;   % Learning rate for weights 
-epsilonvb     = 0.01;   % Learning rate for biases of visible units 
-epsilonhb     = 0.01;   % Learning rate for biases of hidden units 
+epsilonw      = 0.1;   % Learning rate for weights 
+epsilonvb     = 0.1;   % Learning rate for biases of visible units 
+epsilonhb     = 0.1;   % Learning rate for biases of hidden units 
 weightcost  = 0.0002;   
-momentum    = 0.9;
+initialmomentum  = 0.5;
+finalmomentum    = 0.9;
 
 [numcases numdims numbatches]=size(batchdata);
 
@@ -35,7 +36,7 @@ if restart ==1,
   epoch=1;
 
 % Initializing symmetric weights and biases. 
-  vishid     = normrnd(0,0.01,[numdims, numhid]);
+  vishid     = 0.1*randn(numdims, numhid);
   hidbiases  = zeros(1,numhid);
   visbiases  = zeros(1,numdims);
 
@@ -67,11 +68,8 @@ for epoch = epoch:maxepoch,
   poshidstates = poshidprobs > rand(numcases,numhid);
 
 %%%%%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  lambda=repmat(sum(data,2),1,numdims).*(exp(poshidstates*vishid' + repmat(visbiases,numcases,1))./repmat(sum(exp(poshidstates*vishid' + repmat(visbiases,numcases,1)),2),1,numdims));
-  negdata = lambda;             % Utilizar el valor esperado para reconstruir. Lambda sólo varía según la capa oculta.
-  %negdata = poissrnd(lambda);  % Generar aleatorio según poisson. Da un comportamiento completamente distinto en cada iteración, pero da un error bastante mayor.
-  %negdata = poisspdf(data,lambda);
-  neghidprobs = 1./(1 + exp(-negdata*vishid - repmat(hidbiases,numcases,1)));
+  negdata = 1./(1 + exp(-poshidstates*vishid' - repmat(visbiases,numcases,1)));
+  neghidprobs = 1./(1 + exp(-negdata*vishid - repmat(hidbiases,numcases,1)));    
   negprods  = negdata'*neghidprobs;
   neghidact = sum(neghidprobs);
   negvisact = sum(negdata); 
@@ -80,8 +78,15 @@ for epoch = epoch:maxepoch,
   err= sum(sum( (data-negdata).^2 ));
   errsum = err + errsum;
 
+   if epoch>5,
+     momentum=finalmomentum;
+   else
+     momentum=initialmomentum;
+   end;
+
 %%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-    vishidinc = momentum*vishidinc + epsilonw*( (posprods-negprods)/numcases - weightcost*vishid);
+    vishidinc = momentum*vishidinc + ...
+                epsilonw*( (posprods-negprods)/numcases - weightcost*vishid);
     visbiasinc = momentum*visbiasinc + (epsilonvb/numcases)*(posvisact-negvisact);
     hidbiasinc = momentum*hidbiasinc + (epsilonhb/numcases)*(poshidact-neghidact);
 
