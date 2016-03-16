@@ -19,7 +19,7 @@ from collections import Counter
 i=1
 
 # Crea el archivo word_count segun las palabras unicas encontradas.
-vocab = file(sys.argv[1] + "vocab", "rb").read().split()
+vocab = file(sys.argv[1] + "vocab", "rb").read().split()[-2000:]
 
 data_word_count = open(sys.argv[1] + "word_count", "w")
 for (path, ficheros, archivos) in walk(sys.argv[1]):
@@ -30,23 +30,29 @@ for (path, ficheros, archivos) in walk(sys.argv[1]):
 
 			print '%d) ' %i + path + '/' + archivo
 			text = file(path + "/" + archivo, "r").read()
+			
 			# Elimina numeros del texto
 			text = ''.join([j for j in text if not j.isdigit()])
+
 			# Elimina elementos unicode no legibles
 			text = "".join([x if 31 < ord(x) < 128 else '?' for x in text])
+
 			# Elimina puntuacion del texto
 			for c in string.punctuation:
 				text= text.replace(c," ")
+
 			# Elimina palabras de largo menor a 3
 			text = ' '.join(word for word in text.split() if len(word)>3)
+
 			# Convertir todo el texto en minusculas
 			text = text.lower()
 			word_count = [text.count(w) for w in vocab]
-			for idx2, word in enumerate(word_count):
+
+			for idx2, word in enumerate(word_count,1):
 				if word > 0:
 					print "%d" %i + " %d " %idx2 + " %d \n" %word
-					data_word_count.write("%d" %i + " %d " %idx2 + " %d \n" %word)
-			data_word_count.write("\n")
+					data_word_count.write("%d" %i + " %d " %idx2 + " %d\n" %word)
 			i=i+1
+
 data_word_count.write("%d" %len(vocab))
 data_word_count.close()
