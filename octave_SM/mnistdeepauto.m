@@ -20,25 +20,31 @@
 clear all
 close all
 
-maxepoch=50; %In the Science paper we use maxepoch=50, but it works just fine. 
-numhid=1000; numpen=500; numpen2=250; numopen=30;
+maxepoch=5; %In the Science paper we use maxepoch=50, but it works just fine. 
+numhid=500;
+numpen=500;
+numpen2=250;
+numopen=128;
 
 fprintf(1,'Pretraining a deep autoencoder. \n');
 fprintf(1,'The Science paper used 50 epochs. This uses %3i \n', maxepoch);
 
-%batchdata = 0.3 > rand(100,2000,10);
-batchdata=unidrnd(10,[100,2000,10])-ones(100,2000,10);
-%batchdata=batchdata./repmat(sum(batchdata,2),1,size(batchdata,2));
-testbatchdata=unidrnd(10,[1000,2000,1])-ones(1000,2000,1);
-%testbatchdata = 0.3 > rand(100,2000,10);
+%makebatches;
+batchdata = 0.2 > rand(10,2000,10);
+%batchdata=unidrnd(10,[10,2000,10])-ones(10,2000,10);
+%testbatchdata=unidrnd(10,[10,2000,10])-ones(10,2000,10);
+testbatchdata = 0.2 > rand(10,2000,10);
 org=batchdata;
+
 [numcases numdims numbatches]=size(batchdata);
 
 fprintf(1,'Pretraining Layer 1 with RBM: %d-%d \n',numdims,numhid);
 restart=1;
 cpm;
+%rbm;
 hidrecbiases=hidbiases; 
 save mnistvh vishid hidrecbiases visbiases;
+
 
 fprintf(1,'\nPretraining Layer 2 with RBM: %d-%d \n',numhid,numpen);
 batchdata=batchposhidprobs;
@@ -60,7 +66,7 @@ fprintf(1,'\nPretraining Layer 4 with RBM: %d-%d \n',numpen2,numopen);
 batchdata=batchposhidprobs;
 numhid=numopen; 
 restart=1;
-rbm;
+rbmhidlinear;
 hidtop=vishid; toprecbiases=hidbiases; topgenbiases=visbiases;
 save mnistpo hidtop toprecbiases topgenbiases;
 

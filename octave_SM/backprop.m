@@ -25,8 +25,10 @@ load mnisthp
 load mnisthp2
 load mnistpo 
 
-batchdata=org./repmat(sum(org,2),1,size(org,2));
-testbatchdata=testbatchdata./repmat(sum(testbatchdata,2),1,size(testbatchdata,2));
+%batchdata=org./repmat(sum(org,2),1,size(org,2));
+%testbatchdata=testbatchdata./repmat(sum(testbatchdata,2),1,size(testbatchdata,2));
+makebatches;
+
 [numcases numdims numbatches]=size(batchdata);
 N=numcases; 
 
@@ -67,12 +69,11 @@ N=numcases;
   w1probs = 1./(1 + exp(-data*w1)); w1probs = [w1probs  ones(N,1)];
   w2probs = 1./(1 + exp(-w1probs*w2)); w2probs = [w2probs ones(N,1)];
   w3probs = 1./(1 + exp(-w2probs*w3)); w3probs = [w3probs  ones(N,1)];
-  w4probs = 1./(1 + exp(-w3probs*w4)); w4probs = w4probs > rand(size(w4probs)); w4probs = [w4probs  ones(N,1)];
+  w4probs = w3probs*w4; w4probs = w4probs > 0.1; w4probs = [w4probs  ones(N,1)];
   w5probs = 1./(1 + exp(-w4probs*w5)); w5probs = [w5probs  ones(N,1)];
   w6probs = 1./(1 + exp(-w5probs*w6)); w6probs = [w6probs  ones(N,1)];
   w7probs = 1./(1 + exp(-w6probs*w7)); w7probs = [w7probs  ones(N,1)];
-  %dataout = 1./(1 + exp(-w7probs*w8));
-  dataout = exp(-w7probs*w8)./repmat(sum(1 + exp(-w7probs*w8),2),1,size(exp(-w7probs*w8),2));
+  dataout = 1./(1 + exp(-w7probs*w8));  
   err= err +  1/N*sum(sum( (data(:,1:end-1)-dataout).^2 )); 
   end
  train_err(epoch)=err/numbatches;
@@ -89,13 +90,11 @@ for batch = 1:testnumbatches
   w1probs = 1./(1 + exp(-data*w1)); w1probs = [w1probs  ones(N,1)];
   w2probs = 1./(1 + exp(-w1probs*w2)); w2probs = [w2probs ones(N,1)];
   w3probs = 1./(1 + exp(-w2probs*w3)); w3probs = [w3probs  ones(N,1)];
-  w4probs = 1./(1 + exp(-w3probs*w4)); w4probs = w4probs > rand(size(w4probs)); w4probs = [w4probs  ones(N,1)];
-  %w4probs = 1./(1 + exp(-w3probs*w4)); w4probs = [w4probs  ones(N,1)];
+  w4probs = w3probs*w4; w4probs = w4probs > 0.1; w4probs = [w4probs  ones(N,1)];
   w5probs = 1./(1 + exp(-w4probs*w5)); w5probs = [w5probs  ones(N,1)];
   w6probs = 1./(1 + exp(-w5probs*w6)); w6probs = [w6probs  ones(N,1)];
   w7probs = 1./(1 + exp(-w6probs*w7)); w7probs = [w7probs  ones(N,1)];
-  %dataout = 1./(1 + exp(-w7probs*w8));
-  dataout = exp(-w7probs*w8)./repmat(sum(1 + exp(-w7probs*w8),2),1,size(exp(-w7probs*w8),2));
+  dataout = 1./(1 + exp(-w7probs*w8));
   err = err +  1/N*sum(sum( (data(:,1:end-1)-dataout).^2 ));
   end
  test_err(epoch)=err/testnumbatches;
@@ -103,18 +102,20 @@ for batch = 1:testnumbatches
 
 %%%%%%%%%%%%%% END OF COMPUTING TEST RECONSTRUCTION ERROR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- tt=0;
- for batch = 1:numbatches/10
+% tt=0;
+% for batch = 1:numbatches/10
+for batch = 1:numbatches
  fprintf(1,'epoch %d batch %d\r',epoch,batch);
 
 
 %%%%%%%%%%% COMBINE 10 MINIBATCHES INTO 1 LARGER MINIBATCH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- tt=tt+1; 
- data=[];
- for kk=1:10
-  data=[data 
-        batchdata(:,:,(tt-1)*10+kk)]; 
- end 
+% tt=tt+1; 
+% data=[];
+% for kk=1:10
+%  data=[data 
+%        batchdata(:,:,(tt-1)*10+kk)]; 
+% end 
+  data = batchdata(:,:,batch);
 
 %%%%%%%%%%%%%%% PERFORM CONJUGATE GRADIENT WITH 3 LINESEARCHES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   max_iter=3;
@@ -145,5 +146,8 @@ for batch = 1:testnumbatches
 
  save mnist_weights w1 w2 w3 w4 w5 w6 w7 w8 
  save mnist_error test_err train_err;
-
 end
+
+fig = figure;
+plot([1:maxepoch],test_err,'b--o',[1:maxepoch],train_err,'c*');
+print(fig,'err_final','-dpng');

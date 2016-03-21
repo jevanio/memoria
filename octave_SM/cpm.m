@@ -27,6 +27,7 @@ epsilonvb     = 0.01;   % Learning rate for biases of visible units
 epsilonhb     = 0.01;   % Learning rate for biases of hidden units 
 weightcost  = 0.0002;   
 momentum    = 0.9;
+errsum = [];
 
 [numcases numdims numbatches]=size(batchdata);
 
@@ -35,7 +36,10 @@ if restart ==1,
   epoch=1;
 
 % Initializing symmetric weights and biases. 
-  vishid     = normrnd(0,0.01,[numdims, numhid]);
+  %vishid     = normrnd(0,0.01,[numdims, numhid]);
+  %vishid = vishid - repmat(sum(vishid,1)/size(vishid,1),size(vishid,1),1);
+  vishid     = 0.1*randn(numdims, numhid);
+
   hidbiases  = zeros(1,numhid);
   visbiases  = zeros(1,numdims);
 
@@ -51,7 +55,7 @@ end
 
 for epoch = epoch:maxepoch,
  fprintf(1,'epoch %d\r',epoch); 
- errsum=0;
+ errsum(epoch)=0;
  for batch = 1:numbatches,
  fprintf(1,'epoch %d batch %d\r',epoch,batch); 
 
@@ -64,21 +68,21 @@ for epoch = epoch:maxepoch,
   posvisact = sum(data);
 
 %%%%%%%%% END OF POSITIVE PHASE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
   poshidstates = poshidprobs > rand(numcases,numhid);
 
 %%%%%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   lambda=repmat(sum(data,2),1,numdims).*(exp(poshidstates*vishid' + repmat(visbiases,numcases,1))./repmat(sum(exp(poshidstates*vishid' + repmat(visbiases,numcases,1)),2),1,numdims));
-  negdata = lambda;             % Utilizar el valor esperado para reconstruir. Lambda sólo varía según la capa oculta.
-  %negdata = poissrnd(lambda);  % Generar aleatorio según poisson. Da un comportamiento completamente distinto en cada iteración, pero da un error bastante mayor.
-  %negdata = poisspdf(data,lambda);
+  %negdata = lambda;             % Utilizar el valor esperado para reconstruir. Lambda sólo varía según la capa oculta.
+  negdata = poissrnd(lambda);  % Generar aleatorio según poisson. Da un comportamiento completamente distinto en cada iteración, pero da un error bastante mayor.
   neghidprobs = 1./(1 + exp(-negdata*vishid - repmat(hidbiases,numcases,1)));
   negprods  = negdata'*neghidprobs;
   neghidact = sum(neghidprobs);
   negvisact = sum(negdata); 
 
 %%%%%%%%% END OF NEGATIVE PHASE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  err= sum(sum( (data-negdata).^2 ));
-  errsum = err + errsum;
+  err= (sum(sum( (data-negdata).^2 )))/numcases;
+  errsum(epoch) = err + errsum(epoch);
 
 %%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     vishidinc = momentum*vishidinc + epsilonw*( (posprods-negprods)/numcases - weightcost*vishid);
@@ -92,5 +96,11 @@ for epoch = epoch:maxepoch,
 %%%%%%%%%%%%%%%% END OF UPDATES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
   end
-  fprintf(1, 'epoch %4i error %6.1f  \n', epoch, errsum); 
+  errsum(epoch)=errsum(epoch)/numbatches;
+  fprintf(1, 'epoch %4i error %6.1f  \n', epoch, errsum(epoch));
 end;
+
+fig = figure;
+plot([1:maxepoch],errsum,'b--o');
+title='CPM';
+print(fig,title,'-dpng')

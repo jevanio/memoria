@@ -12,74 +12,56 @@
 % not been tested to the degree that would be advisable in any important
 % application.  All use of these programs is entirely at the user's own risk.
 
-digitdata=[]; 
-targets=[]; 
-load digit0; digitdata = [digitdata; D]; targets = [targets; repmat([1 0 0 0 0 0 0 0 0 0], size(D,1), 1)];
-load digit1; digitdata = [digitdata; D]; targets = [targets; repmat([0 1 0 0 0 0 0 0 0 0], size(D,1), 1)]; 
-load digit2; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 1 0 0 0 0 0 0 0], size(D,1), 1)]; 
-load digit3; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 1 0 0 0 0 0 0], size(D,1), 1)]; 
-load digit4; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 1 0 0 0 0 0], size(D,1), 1)]; 
-load digit5; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 1 0 0 0 0], size(D,1), 1)]; 
-load digit6; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 1 0 0 0], size(D,1), 1)]; 
-load digit7; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 1 0 0], size(D,1), 1)]; 
-load digit8; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 0 1 0], size(D,1), 1)]; 
-load digit9; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 0 0 1], size(D,1), 1)]; 
-digitdata = digitdata/255;
-
-totnum=size(digitdata,1);
-fprintf(1, 'Size of the training dataset= %5d \n', totnum);
-
-rand('state',0); %so we know the permutation of the training data
-randomorder=randperm(totnum);
-
-numbatches=totnum/100;
-numdims  =  size(digitdata,2);
-batchsize = 100;
-batchdata = zeros(batchsize, numdims, numbatches);
-batchtargets = zeros(batchsize, 10, numbatches);
-
-for b=1:numbatches
-  batchdata(:,:,b) = digitdata(randomorder(1+(b-1)*batchsize:b*batchsize), :);
-  batchtargets(:,:,b) = targets(randomorder(1+(b-1)*batchsize:b*batchsize), :);
+fprintf(1, 'Reading testing files \n');
+fileID = fopen('../Datasets/20news-bydate/20news-bydate-test/word_count','r');
+formatSpec = '%d';
+sizeA = [3 Inf];
+text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
+test_data = [];
+fprintf(1,'Element non-0: %d \n', size(text_data,2)-1);
+for td=1:(size(text_data,2)-1)
+	test_data(text_data(1,td),text_data(2,td))=text_data(3,td);
 end;
-clear digitdata targets;
 
-digitdata=[];
-targets=[];
-load test0; digitdata = [digitdata; D]; targets = [targets; repmat([1 0 0 0 0 0 0 0 0 0], size(D,1), 1)]; 
-load test1; digitdata = [digitdata; D]; targets = [targets; repmat([0 1 0 0 0 0 0 0 0 0], size(D,1), 1)]; 
-load test2; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 1 0 0 0 0 0 0 0], size(D,1), 1)];
-load test3; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 1 0 0 0 0 0 0], size(D,1), 1)];
-load test4; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 1 0 0 0 0 0], size(D,1), 1)];
-load test5; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 1 0 0 0 0], size(D,1), 1)];
-load test6; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 1 0 0 0], size(D,1), 1)];
-load test7; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 1 0 0], size(D,1), 1)];
-load test8; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 0 1 0], size(D,1), 1)];
-load test9; digitdata = [digitdata; D]; targets = [targets; repmat([0 0 0 0 0 0 0 0 0 1], size(D,1), 1)];
-digitdata = digitdata/255;
-
-totnum=size(digitdata,1);
-fprintf(1, 'Size of the test dataset= %5d \n', totnum);
-
-rand('state',0); %so we know the permutation of the training data
-randomorder=randperm(totnum);
-
-numbatches=totnum/100;
-numdims  =  size(digitdata,2);
-batchsize = 100;
+totnum=size(test_data,1);
+fprintf(1, 'Size of the testing dataset= %5d \n', totnum);
+batchsize = 1;
+numbatches=totnum/batchsize;
+#numdims  =  size(test_data,2);
+numdims  = text_data(1,size(text_data,2))
 testbatchdata = zeros(batchsize, numdims, numbatches);
-testbatchtargets = zeros(batchsize, 10, numbatches);
-
 for b=1:numbatches
-  testbatchdata(:,:,b) = digitdata(randomorder(1+(b-1)*batchsize:b*batchsize), :);
-  testbatchtargets(:,:,b) = targets(randomorder(1+(b-1)*batchsize:b*batchsize), :);
+  testbatchdata(:,:,b) = test_data(1+(b-1)*batchsize:b*batchsize);
 end;
-clear digitdata targets;
+
+clear test_data text_data
+
+fprintf(1, 'Reading training files \n');
+fileID = fopen('../Datasets/20news-bydate/20news-bydate-train/word_count','r');
+formatSpec = '%d';
+sizeA = [3 Inf];
+text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
+train_data = [];
+fprintf(1,'Element non-0: %d \n', size(text_data,2)-1);
+for td=1:(size(text_data,2)-1)
+	td
+	train_data(text_data(1,td),text_data(2,td))=text_data(3,td);
+end;
+
+totnum=size(train_data,1);
+fprintf(1, 'Size of the training dataset= %5d \n', totnum);
+batchsize = 1;
+numbatches=totnum/batchsize;
+#numdims  =  size(train_data,2);
+numdims  = text_data(1,size(text_data,2))
+batchdata = zeros(batchsize, numdims, numbatches);
+for b=1:numbatches
+  batchdata(:,:,b) = train_data(1+(b-1)*batchsize:b*batchsize);
+end;
+
+clear train_data text_data
 
 
 %%% Reset random seeds 
 rand('state',sum(100*clock)); 
 randn('state',sum(100*clock)); 
-
-
-
