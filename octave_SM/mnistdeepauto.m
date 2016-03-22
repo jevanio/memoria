@@ -20,7 +20,7 @@
 clear all
 close all
 
-maxepoch=5; %In the Science paper we use maxepoch=50, but it works just fine. 
+maxepoch=10; %In the Science paper we use maxepoch=50, but it works just fine. 
 numhid=500;
 numpen=500;
 numpen2=250;
@@ -29,11 +29,11 @@ numopen=128;
 fprintf(1,'Pretraining a deep autoencoder. \n');
 fprintf(1,'The Science paper used 50 epochs. This uses %3i \n', maxepoch);
 
-%makebatches;
-batchdata = 0.2 > rand(10,2000,10);
+makebatches;
+%batchdata = 0.2 > rand(10,2000,10);
 %batchdata=unidrnd(10,[10,2000,10])-ones(10,2000,10);
 %testbatchdata=unidrnd(10,[10,2000,10])-ones(10,2000,10);
-testbatchdata = 0.2 > rand(10,2000,10);
+%testbatchdata = 0.2 > rand(10,2000,10);
 org=batchdata;
 
 [numcases numdims numbatches]=size(batchdata);

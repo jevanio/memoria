@@ -28,6 +28,9 @@ epsilonhb     = 0.01;   % Learning rate for biases of hidden units
 weightcost  = 0.0002;   
 momentum    = 0.9;
 errsum = [];
+errsum1 = [];
+errsum3 = [];
+errsum3 = [];
 
 [numcases numdims numbatches]=size(batchdata);
 
@@ -56,6 +59,9 @@ end
 for epoch = epoch:maxepoch,
  fprintf(1,'epoch %d\r',epoch); 
  errsum(epoch)=0;
+ errsum1(epoch)=0;
+ errsum2(epoch)=0;
+ errsum3(epoch)=0;
  for batch = 1:numbatches,
  fprintf(1,'epoch %d batch %d\r',epoch,batch); 
 
@@ -82,7 +88,15 @@ for epoch = epoch:maxepoch,
 
 %%%%%%%%% END OF NEGATIVE PHASE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   err= (sum(sum( (data-negdata).^2 )))/numcases;
+  err1 = (sum(sum( abs(data-negdata) )))/numcases;
+  nonzerodata=data;
+  nonzerodata(nonzerodata==0)=1;
+  err2 = (sum(sum( abs(data-negdata)./nonzerodata )))/numcases;
+  err3 = (sum(max( abs(data-negdata)./nonzerodata )))/numcases;
   errsum(epoch) = err + errsum(epoch);
+  errsum1(epoch) = err1 + errsum1(epoch);
+  errsum2(epoch) = err2 + errsum2(epoch);
+  errsum3(epoch) = err3 + errsum3(epoch);
 
 %%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     vishidinc = momentum*vishidinc + epsilonw*( (posprods-negprods)/numcases - weightcost*vishid);
@@ -97,10 +111,15 @@ for epoch = epoch:maxepoch,
 
   end
   errsum(epoch)=errsum(epoch)/numbatches;
-  fprintf(1, 'epoch %4i error %6.1f  \n', epoch, errsum(epoch));
+  errsum1(epoch)=errsum1(epoch)/numbatches;
+  errsum2(epoch)=errsum2(epoch)/numbatches;
+  errsum3(epoch)=errsum3(epoch)/numbatches;
+  fprintf(1, 'epoch %4i error %6.1f error1 %6.1f error2 %6.1f error3 %6.1f\n', epoch, errsum(epoch), errsum1(epoch), errsum2(epoch), errsum3(epoch));
 end;
 
 fig = figure;
-plot([1:maxepoch],errsum,'b--o');
+%plot([1:maxepoch],errsum,'b--o',[1:maxepoch],errsum1,'r--o',[1:maxepoch],errsum2,'g--o',[1:maxepoch],errsum3,'y--o');
+plot([1:maxepoch],errsum1,'r--o',[1:maxepoch],errsum2,'g--o',[1:maxepoch],errsum3,'y--o');
+legend('Error Abs por Palabra','Error Abs por Palabra / Palabra','Maximo Error abs por palabra')
 title='CPM';
 print(fig,title,'-dpng')

@@ -25,9 +25,9 @@ load mnisthp
 load mnisthp2
 load mnistpo 
 
-%batchdata=org./repmat(sum(org,2),1,size(org,2));
-%testbatchdata=testbatchdata./repmat(sum(testbatchdata,2),1,size(testbatchdata,2));
-makebatches;
+batchdata=org./repmat(sum(org,2),1,size(org,2));
+testbatchdata=testbatchdata./repmat(sum(testbatchdata,2),1,size(testbatchdata,2));
+%makebatches;
 
 [numcases numdims numbatches]=size(batchdata);
 N=numcases; 
