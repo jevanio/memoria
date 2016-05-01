@@ -13,21 +13,19 @@
 % application.  All use of these programs is entirely at the user's own risk.
 
 % This program fine-tunes an autoencoder with backpropagation.
-% Weights of the autoencoder are going to be saved in mnist_weights.mat
-% and trainig and test reconstruction errors in mnist_error.mat
-% You can also set maxepoch, default value is 200 as in our paper.  
+% Weights of the autoencoder are going to be saved in weights.mat
+% and trainig and test reconstruction errors in error.mat
 
-maxepoch=5;
+maxepoch=50;
 fprintf(1,'\nFine-tuning deep autoencoder by minimizing cross entropy error. \n');
 
-load mnistvh
-load mnisthp
-load mnisthp2
-load mnistpo 
+load Matlab/weights_vh.mat
+load Matlab/weights_hp.mat
+load Matlab/weights_hp2.mat
+load Matlab/weights_po.mat
 
 batchdata=org./repmat(sum(org,2),1,size(org,2));
 testbatchdata=testbatchdata./repmat(sum(testbatchdata,2),1,size(testbatchdata,2));
-%makebatches;
 
 [numcases numdims numbatches]=size(batchdata);
 N=numcases; 
@@ -56,7 +54,6 @@ l9=l1;
 test_err=[];
 train_err=[];
 
-
 for epoch = 1:maxepoch
 
 %%%%%%%%%%%%%%%%%%%% COMPUTE TRAINING RECONSTRUCTION ERROR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +71,7 @@ N=numcases;
   w6probs = 1./(1 + exp(-w5probs*w6)); w6probs = [w6probs  ones(N,1)];
   w7probs = 1./(1 + exp(-w6probs*w7)); w7probs = [w7probs  ones(N,1)];
   dataout = 1./(1 + exp(-w7probs*w8));  
-  err= err +  1/N*sum(sum( (data(:,1:end-1)-dataout).^2 )); 
+  err= err +  (sum(sum( (data(:,1:end-1)-dataout).^2 )))/N; 
   end
  train_err(epoch)=err/numbatches;
 
@@ -95,7 +92,7 @@ for batch = 1:testnumbatches
   w6probs = 1./(1 + exp(-w5probs*w6)); w6probs = [w6probs  ones(N,1)];
   w7probs = 1./(1 + exp(-w6probs*w7)); w7probs = [w7probs  ones(N,1)];
   dataout = 1./(1 + exp(-w7probs*w8));
-  err = err +  1/N*sum(sum( (data(:,1:end-1)-dataout).^2 ));
+  err= err +  1/N*sum(sum( (data(:,1:end-1)-dataout).^2 )); 
   end
  test_err(epoch)=err/testnumbatches;
  fprintf(1,'Before epoch %d Train squared error: %6.3f Test squared error: %6.3f \t \t \n',epoch,train_err(epoch),test_err(epoch));
@@ -144,10 +141,6 @@ for batch = 1:numbatches
 
  end
 
- save mnist_weights w1 w2 w3 w4 w5 w6 w7 w8 
- save mnist_error test_err train_err;
+ save -6 Matlab/weights.mat w1 w2 w3 w4 w5 w6 w7 w8 
+ save -6 Matlab/error.mat test_err train_err;
 end
-
-fig = figure;
-plot([1:maxepoch],test_err,'b--o',[1:maxepoch],train_err,'c*');
-print(fig,'err_final','-dpng');

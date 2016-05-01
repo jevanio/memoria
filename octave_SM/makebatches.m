@@ -12,57 +12,64 @@
 % not been tested to the degree that would be advisable in any important
 % application.  All use of these programs is entirely at the user's own risk.
 
-fprintf(1, 'Reading testing files \n');
-fileID = fopen('../Datasets/20news-bydate/20news-bydate-test/word_count','r');
-formatSpec = '%d';
-sizeA = [3 Inf];
-text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
-test_data = [];
-for td=1:(size(text_data,2)-1)
-	fprintf(1,'Words %d/%d \r',td,size(text_data,2)-1);
-	test_data(text_data(1,td),text_data(2,td))=text_data(3,td);
-end;
+%fprintf(1, 'Leyendo Test Data \n');
+%fileID = fopen('../Datasets/20news-bydate/20news-bydate-test/word_count','r');
+%formatSpec = '%d';
+%sizeA = [3 Inf];
+%text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
+%test_data = [];
+%for td=1:(size(text_data,2)-1)
+%	fprintf(1,'palabra %d/%d \r',td,size(text_data,2)-1);
+%	test_data(text_data(1,td),text_data(2,td))=text_data(3,td);
+%end;
+
+load Matlab/tf_test.mat
+test_data=tf;
 
 totnum=size(test_data,1);
-fprintf(1, 'Size of the testing dataset= %5d \n', totnum);
-batchsize = 100;
+fprintf(1, 'Tamaño Testing Dataset = %5d \n', totnum);
+batchsize = 10;
 numbatches=floor(totnum/batchsize)
-#numdims  =  size(test_data,2);
-numdims  = text_data(1,size(text_data,2));
+#numdims  = text_data(1,size(text_data,2));
+numdims = size(test_data,2);
 testbatchdata = zeros(batchsize, numdims, numbatches);
 for b=1:numbatches
-	fprintf(1,'Batches %d/%d \r',b,numbatches);
+	fprintf(1,'Batch %d/%d \r',b,numbatches);
   testbatchdata(:,:,b) = test_data(1+(b-1)*batchsize:b*batchsize,:);
 end;
 
-clear test_data text_data
+%clear test_data text_data
+clear test_data
 
+fprintf(1, 'Leyendo Training Data \n');
+%fileID = fopen('../Datasets/20news-bydate/20news-bydate-train/word_count','r');
+%formatSpec = '%d';
+%sizeA = [3 Inf];
+%text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
+%train_data = [];
+%for td=1:(size(text_data,2)-1)
+	%fprintf(1,'palabra %d/%d \r',td,size(text_data,2)-1);
+	%train_data(text_data(1,td),text_data(2,td))=text_data(3,td);
+%end;
 
-fprintf(1, 'Reading training files \n');
-fileID = fopen('../Datasets/20news-bydate/20news-bydate-train/word_count','r');
-formatSpec = '%d';
-sizeA = [3 Inf];
-text_data=fscanf(fileID,formatSpec,sizeA); %Cada Columna contiene el id del texto, id de la palabra y su frecuencia.
-train_data = [];
-for td=1:(size(text_data,2)-1)
-	fprintf(1,'Words %d/%d \r',td,size(text_data,2)-1);
-	train_data(text_data(1,td),text_data(2,td))=text_data(3,td);
-end;
+load Matlab/tf_train.mat
+train_data=tf;
+
 
 totnum=size(train_data,1);
-fprintf(1, 'Size of the training dataset= %5d \n', totnum);
+fprintf(1, 'Tamaño training Dataset = %5d \n', totnum);
 batchsize = 100;
 numbatches=floor(totnum/batchsize)
-#numdims  =  size(train_data,2);
-numdims  = text_data(1,size(text_data,2));
+numdims  =  size(train_data,2);
+#numdims  = text_data(1,size(text_data,2));
 batchdata = zeros(batchsize, numdims, numbatches);
 for b=1:numbatches
-	fprintf(1,'Batches %d/%d \r',b,numbatches);
+	fprintf(1,'Batch %d/%d \r',b,numbatches);
   batchdata(:,:,b) = train_data(1+(b-1)*batchsize:b*batchsize,:);
 end;
 
-clear train_data text_data
-
+%clear train_data text_data
+clear train_data
 
 %%% Reset random seeds 
 rand('state',sum(100*clock)); 

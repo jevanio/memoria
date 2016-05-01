@@ -12,8 +12,8 @@
 % not been tested to the degree that would be advisable in any important
 % application.  All use of these programs is entirely at the user's own risk.
 
-% This program trains Restricted Boltzmann Machine in which
-% visible, binary, stochastic pixels are connected to
+% This program trains Constrained Poisson Model in which
+% visible, integer, wordcount vector are connected to
 % hidden, binary, stochastic feature detectors using symmetrically
 % weighted connections. Learning is done with 1-step Contrastive Divergence.   
 % The program assumes that the following variables are set externally:
@@ -39,8 +39,6 @@ if restart ==1,
   epoch=1;
 
 % Initializing symmetric weights and biases. 
-  %vishid     = normrnd(0,0.01,[numdims, numhid]);
-  %vishid = vishid - repmat(sum(vishid,1)/size(vishid,1),size(vishid,1),1);
   vishid     = 0.1*randn(numdims, numhid);
 
   hidbiases  = zeros(1,numhid);
@@ -118,8 +116,7 @@ for epoch = epoch:maxepoch,
 end;
 
 fig = figure;
-%plot([1:maxepoch],errsum,'b--o',[1:maxepoch],errsum1,'r--o',[1:maxepoch],errsum2,'g--o',[1:maxepoch],errsum3,'y--o');
-plot([1:maxepoch],errsum1,'r--o',[1:maxepoch],errsum2,'g--o',[1:maxepoch],errsum3,'y--o');
-legend('Error Abs por Palabra','Error Abs por Palabra / Palabra','Maximo Error abs por palabra')
+plot([1:maxepoch],errsum1,'r--o',[1:maxepoch],errsum2,'g--o',[1:maxepoch],errsum3,'b--o');
+legend('Error Abs','Error Relativo','Maximo Error Relativo');
 title='CPM';
 print(fig,title,'-dpng')
