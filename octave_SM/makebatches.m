@@ -25,21 +25,22 @@
 
 load Matlab/tf_test.mat
 test_data=tf;
+test_label=label;
 
 totnum=size(test_data,1);
 fprintf(1, 'Tamaño Testing Dataset = %5d \n', totnum);
 batchsize = 10;
 numbatches=floor(totnum/batchsize)
-#numdims  = text_data(1,size(text_data,2));
 numdims = size(test_data,2);
 testbatchdata = zeros(batchsize, numdims, numbatches);
+testbatchtargets = zeros(batchsize,numbatches);
 for b=1:numbatches
-	fprintf(1,'Batch %d/%d \r',b,numbatches);
+  fprintf(1,'Batch %d/%d \r',b,numbatches);
   testbatchdata(:,:,b) = test_data(1+(b-1)*batchsize:b*batchsize,:);
+  testbatchtargets(:,b) = test_label(1+(b-1)*batchsize:b*batchsize);
 end;
 
-%clear test_data text_data
-clear test_data
+clear test_data test_label
 
 fprintf(1, 'Leyendo Training Data \n');
 %fileID = fopen('../Datasets/20news-bydate/20news-bydate-train/word_count','r');
@@ -54,7 +55,7 @@ fprintf(1, 'Leyendo Training Data \n');
 
 load Matlab/tf_train.mat
 train_data=tf;
-
+train_label=label;
 
 totnum=size(train_data,1);
 fprintf(1, 'Tamaño training Dataset = %5d \n', totnum);
@@ -63,13 +64,14 @@ numbatches=floor(totnum/batchsize)
 numdims  =  size(train_data,2);
 #numdims  = text_data(1,size(text_data,2));
 batchdata = zeros(batchsize, numdims, numbatches);
+batchtargets = zeros(batchsize,numbatches);
 for b=1:numbatches
-	fprintf(1,'Batch %d/%d \r',b,numbatches);
+  fprintf(1,'Batch %d/%d \r',b,numbatches);
   batchdata(:,:,b) = train_data(1+(b-1)*batchsize:b*batchsize,:);
+  batchtargets(:,b) = train_label(1+(b-1)*batchsize:b*batchsize);
 end;
 
-%clear train_data text_data
-clear train_data
+clear train_data train_label
 
 %%% Reset random seeds 
 rand('state',sum(100*clock)); 

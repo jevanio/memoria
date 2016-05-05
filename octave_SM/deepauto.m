@@ -24,7 +24,7 @@ maxepoch=50; %In the Science paper we use maxepoch=50, but it works just fine.
 numhid=500;
 numpen=500;
 numpen2=250;
-numopen=8;
+numopen=128;
 
 fprintf(1,'Pretraining a deep autoencoder. \n');
 fprintf(1,'The Science paper used 50 epochs. This uses %3i \n', maxepoch);
@@ -66,3 +66,5 @@ hidtop=vishid; toprecbiases=hidbiases; topgenbiases=visbiases;
 save -6 Matlab/weights_po.mat hidtop toprecbiases topgenbiases;
 
 backprop;
+
+makehash;
